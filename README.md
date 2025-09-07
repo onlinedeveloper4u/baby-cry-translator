@@ -1,50 +1,101 @@
-# Welcome to your Expo app 👋
+# Baby Cry Translator 👶🔊
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native application built with Expo that helps parents understand their baby's needs by analyzing their cries.
 
-## Get started
+## Project Structure
 
-1. Install dependencies
+```
+├── app/                     # Expo Router screens (route-based)
+│   ├── _layout.tsx          # Root layout component
+│   ├── index.tsx            # Home screen
+│   └── (tabs)/              # Tab navigation
+│       ├── home.tsx
+│       ├── profile.tsx
+│       └── settings.tsx
+│
+├── src/
+│   ├── api/                 # API requests and services
+│   ├── components/          # Reusable UI components
+│   │   ├── ui/              # Basic UI elements (buttons, inputs, etc.)
+│   │   └── layout/          # Layout components (headers, footers, etc.)
+│   ├── hooks/               # Custom React hooks
+│   ├── store/               # State management (Zustand/Redux/Context)
+│   ├── utils/               # Helper functions, formatters, validators
+│   ├── config/              # App configurations (theme, constants, etc.)
+│   └── types/               # TypeScript type definitions
+│
+├── assets/                  # Static assets
+│   ├── fonts/               # Custom fonts
+│   ├── images/              # Image assets
+│   └── icons/               # App icons
+│
+├── .gitignore
+├── app.json                # Expo configuration
+├── babel.config.js         # Babel configuration
+├── tsconfig.json           # TypeScript configuration
+└── package.json            # Project dependencies
+```
 
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js (v16 or later)
+- npm or yarn
+- Expo CLI (`npm install -g expo-cli`)
+
+### Installation
+
+1. Clone the repository
    ```bash
-   npm install
+   git clone <repository-url>
+   cd baby-cry-translator
    ```
 
-2. Start the app
+2. Install dependencies
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
+3. Start the development server
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+4. Run on your device/emulator
+   - Press `i` for iOS simulator
+   - Press `a` for Android emulator
+   - Scan the QR code with Expo Go (Android) or Camera (iOS)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 🛠 Development
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Code Style
+- Follow the [React Native Style Guide](https://reactnative.dev/docs/style)
+- Use TypeScript for type safety
+- Keep components small and focused on a single responsibility
 
-## Get a fresh project
+### Import Aliases
+Use the `@/` alias for imports from the `src` directory:
 
-When you're ready, run:
-
-```bash
-npm run reset-project
+```typescript
+import { Button } from '@/components/ui/Button';
+import { useAuth } from '@/hooks/useAuth';
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🤝 Contributing
 
-## Learn more
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-To learn more about developing your project with Expo, look at the following resources:
+## 📝 License
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Join the community
+---
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Built with ❤️ using [Expo](https://expo.dev/) and [React Native](https://reactnative.dev/)
