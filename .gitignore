@@ -5,11 +5,12 @@ node_modules/
 
 # Expo
 .expo/
+.vscode/
 dist/
 web-build/
 expo-env.d.ts
 
-# Native
+# Native / Android / iOS
 .kotlin/
 *.orig.*
 *.jks
@@ -17,23 +18,54 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
+*.keystore
+*.keystore.lock
+android/.gradle/
+android/app/build/
+ios/build/
+ios/Pods/
+*.xcworkspace
+*.xcuserstate
+*.xcuserdata/
 
-# Metro
+# Metro bundler cache
 .metro-health-check*
 
-# debug
+# Debug / Logs
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+*.log
 
 # macOS
 .DS_Store
 *.pem
 
-# local env files
+# local env files (Supabase, Sentry, etc.)
+.env
 .env*.local
+.env.development
+.env.staging
+.env.production
 
-# typescript
+# TypeScript
 *.tsbuildinfo
 
-app-example
+# VS Code & editor settings
+.idea/
+*.swp
+
+# Coverage & test outputs
+coverage/
+jest-html-reporters-*.html
+reports/
+
+# Sentry (don’t push generated source maps locally)
+.sentry/
+
+# Expo Doctor cache
+.expo-shared/
+
+# Cache
+.tmp/
+.cache/
