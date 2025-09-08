@@ -1,0 +1,10 @@
+---
+trigger: always_on
+---
+
+# 📝 Naming Conventions
+
+- Directories: lowercase with dashes (e.g., `components/auth-wizard`).
+- Components: PascalCase (e.g., `BabyCryScreen.tsx`).
+- Hooks / utils / stores: camelCase (e.g., `useAuthStore.ts`).
+- Prefer **named exports** for components.
