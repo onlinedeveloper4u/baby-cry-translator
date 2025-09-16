@@ -1,8 +1,10 @@
 import { router } from 'expo-router';
 import React from 'react';
 import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { useAuthStore } from '../../src/store/auth';
 
 export default function AuthLandingScreen() {
+  const { continueAsGuest } = useAuthStore();
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 px-6 pt-10">
@@ -30,7 +32,7 @@ export default function AuthLandingScreen() {
 
           <TouchableOpacity
             className="py-4 rounded-2xl items-center"
-            onPress={() => router.replace('/')}
+            onPress={async () => { await continueAsGuest(); router.replace('/(tabs)'); }}
           >
             <Text className="text-neutral-900 text-lg font-semibold">Continue as Guest</Text>
           </TouchableOpacity>
