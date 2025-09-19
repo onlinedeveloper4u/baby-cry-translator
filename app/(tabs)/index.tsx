@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Audio } from 'expo-av';
-import * as Notifications from 'expo-notifications';
+import { requestRecordingPermissionsAsync } from 'expo-audio';
+import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import React from 'react';
-import { Alert, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, LogBox, Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { useAuthStore } from '../../src/store/auth';
 
 export default function HomeScreen() {
@@ -16,6 +16,8 @@ export default function HomeScreen() {
 
   React.useEffect(() => {
     let isMounted = true;
+    // Silence expo-av deprecation warning in Expo SDK 53 until migration
+    LogBox.ignoreLogs([/Expo AV has been deprecated/i]);
     async function requestPermissionsOnce() {
       try {
         const AsyncStorage = (await import('@react-native-async-storage/async-storage')).default;
@@ -30,17 +32,22 @@ export default function HomeScreen() {
             { cancelable: false }
           );
         });
-        await Audio.requestPermissionsAsync();
+        await requestRecordingPermissionsAsync();
 
-        await new Promise<void>((resolve) => {
-          Alert.alert(
-            'Notifications',
-            'Enable notifications to receive real-time alerts about your baby\'s cries and important updates from the app.',
-            [{ text: 'Allow Notifications', onPress: () => resolve() }],
-            { cancelable: false }
-          );
-        });
-        await Notifications.requestPermissionsAsync();
+        // Only prompt for notifications when supported in the current runtime
+        const isSupportedRuntime = Platform.OS === 'ios' || Constants.appOwnership !== 'expo';
+        if (isSupportedRuntime) {
+          await new Promise<void>((resolve) => {
+            Alert.alert(
+              'Notifications',
+              'Enable notifications to receive real-time alerts about your baby\'s cries and important updates from the app.',
+              [{ text: 'Allow Notifications', onPress: () => resolve() }],
+              { cancelable: false }
+            );
+          });
+          const Notifications = await import('expo-notifications');
+          await Notifications.requestPermissionsAsync();
+        }
 
         if (!isMounted) return;
         await AsyncStorage.setItem('askedPerms', 'true');
