@@ -18,16 +18,8 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-rose-50">
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-6 pt-6 pb-4">
-        <TouchableOpacity onPress={handleBack}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text className="text-2xl font-bold text-neutral-900">Settings</Text>
-        <View style={{ width: 24 }} />
-      </View>
-
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1 px-6 pt-10" showsVerticalScrollIndicator={false}>
+        <Text className="text-3xl font-extrabold text-neutral-900 mb-6">Settings</Text>
         {/* Baby Profiles Section */}
         <View className="mb-8">
           <Text className="text-lg font-bold text-neutral-900 mb-4">Baby Profiles</Text>

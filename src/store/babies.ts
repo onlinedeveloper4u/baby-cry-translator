@@ -12,6 +12,7 @@ export interface BabyProfile {
 interface BabiesState {
   profiles: BabyProfile[];
   activeBabyId: string | null;
+  setActiveLocalOnly: (id: string | null) => void;
   load: () => Promise<void>;
   add: (profile: Omit<BabyProfile, 'id'>) => Promise<void>;
   update: (id: string, profile: Partial<Omit<BabyProfile, 'id'>>) => Promise<void>;
@@ -28,6 +29,7 @@ async function saveToStorage(state: Pick<BabiesState, 'profiles' | 'activeBabyId
 export const useBabiesStore = create<BabiesState>((set, get) => ({
   profiles: [],
   activeBabyId: null,
+  setActiveLocalOnly: (id) => set({ activeBabyId: id }),
 
   load: async () => {
     try {

@@ -122,7 +122,7 @@ export default function HomeScreen() {
                 <Text className="text-white text-3xl font-extrabold pr-4" style={{ flexShrink: 1 }}>
                   Is your baby{"\n"}crying now?
                 </Text>
-                <TouchableOpacity className="bg-red-600 px-6 py-3 rounded-full">
+                <TouchableOpacity className="bg-red-600 px-6 py-3 rounded-full" onPress={() => router.push('/analyze/listen')}>
                   <Text className="text-white text-lg font-bold">Record Now</Text>
                 </TouchableOpacity>
               </View>
