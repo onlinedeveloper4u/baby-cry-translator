@@ -31,44 +31,40 @@ export default function SettingsScreen() {
         {/* Baby Profiles Section */}
         <View className="mb-8">
           <Text className="text-lg font-bold text-neutral-900 mb-4">Baby Profiles</Text>
-          <TouchableOpacity className="bg-white rounded-2xl p-4 flex-row items-center">
-            <View className="w-12 h-12 bg-blue-100 rounded-full items-center justify-center mr-4">
+          <TouchableOpacity className="flex-row items-center py-4" onPress={() => router.push('/babies')}>
+            <View className="w-12 h-12 bg-blue-100 rounded-2xl items-center justify-center mr-4">
               <Ionicons name="happy-outline" size={24} color="#3B82F6" />
             </View>
             <View className="flex-1">
               <Text className="text-lg font-medium text-neutral-900">Manage Baby Profiles</Text>
               <Text className="text-sm text-amber-800 mt-1">Baby's name, age, and other details</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
           </TouchableOpacity>
         </View>
 
         {/* Account Section */}
         <View className="mb-8">
           <Text className="text-lg font-bold text-neutral-900 mb-4">Account</Text>
-          <View className="space-y-3">
-            <TouchableOpacity className="bg-white rounded-2xl p-4 flex-row items-center">
-              <View className="w-12 h-12 bg-gray-100 rounded-full items-center justify-center mr-4">
+          <View className="">
+            <TouchableOpacity className="flex-row items-center py-4">
+              <View className="w-12 h-12 bg-gray-100 rounded-2xl items-center justify-center mr-4">
                 <Ionicons name="person-outline" size={24} color="#6B7280" />
               </View>
               <Text className="text-lg font-medium text-neutral-900 flex-1">Account Details</Text>
-              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
             </TouchableOpacity>
 
-            <TouchableOpacity className="bg-white rounded-2xl p-4 flex-row items-center">
-              <View className="w-12 h-12 bg-gray-100 rounded-full items-center justify-center mr-4">
+            <TouchableOpacity className="flex-row items-center py-4">
+              <View className="w-12 h-12 bg-gray-100 rounded-2xl items-center justify-center mr-4">
                 <Ionicons name="star-outline" size={24} color="#6B7280" />
               </View>
               <Text className="text-lg font-medium text-neutral-900 flex-1">Subscription Status</Text>
-              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
             </TouchableOpacity>
 
-            <TouchableOpacity className="bg-white rounded-2xl p-4 flex-row items-center">
-              <View className="w-12 h-12 bg-gray-100 rounded-full items-center justify-center mr-4">
+            <TouchableOpacity className="flex-row items-center py-4">
+              <View className="w-12 h-12 bg-gray-100 rounded-2xl items-center justify-center mr-4">
                 <Ionicons name="card-outline" size={24} color="#6B7280" />
               </View>
               <Text className="text-lg font-medium text-neutral-900 flex-1">Manage Subscription</Text>
-              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
             </TouchableOpacity>
           </View>
         </View>
@@ -76,9 +72,9 @@ export default function SettingsScreen() {
         {/* Data Controls Section */}
         <View className="mb-8">
           <Text className="text-lg font-bold text-neutral-900 mb-4">Data Controls</Text>
-          <View className="space-y-3">
-            <TouchableOpacity className="bg-white rounded-2xl p-4 flex-row items-center">
-              <View className="w-12 h-12 bg-gray-100 rounded-full items-center justify-center mr-4">
+          <View>
+            <TouchableOpacity className="flex-row items-center py-4">
+              <View className="w-12 h-12 bg-gray-100 rounded-2xl items-center justify-center mr-4">
                 <Ionicons name="download-outline" size={24} color="#6B7280" />
               </View>
               <View className="flex-1">
@@ -86,18 +82,16 @@ export default function SettingsScreen() {
                   Export Data <Text className="text-amber-800">(Premium)</Text>
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
             </TouchableOpacity>
 
             <TouchableOpacity 
-              className="bg-white rounded-2xl p-4 flex-row items-center"
+              className="flex-row items-center py-4"
               onPress={handleSignOut}
             >
-              <View className="w-12 h-12 bg-gray-100 rounded-full items-center justify-center mr-4">
+              <View className="w-12 h-12 bg-gray-100 rounded-2xl items-center justify-center mr-4">
                 <Ionicons name="log-out-outline" size={24} color="#6B7280" />
               </View>
               <Text className="text-lg font-medium text-neutral-900 flex-1">Sign Out</Text>
-              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
             </TouchableOpacity>
           </View>
         </View>
