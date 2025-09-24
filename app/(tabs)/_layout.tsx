@@ -6,10 +6,19 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#b91c1c',
-        tabBarInactiveTintColor: '#9f6b6b',
-        tabBarLabelStyle: { fontSize: 14 },
-        tabBarStyle: { height: 70, paddingBottom: 10, paddingTop: 10 },
+        tabBarActiveTintColor: '#0b0b0b',
+        tabBarInactiveTintColor: '#b86b6b',
+        tabBarLabelStyle: { fontSize: 13, fontWeight: '600' },
+        tabBarStyle: {
+          height: 88,
+          paddingBottom: 12,
+          paddingTop: 10,
+          backgroundColor: '#ffffff',
+          borderTopColor: '#f3e2e2',
+          borderTopWidth: 1,
+          elevation: 0,
+          shadowOpacity: 0,
+        },
         headerShown: false,
       }}
     >
@@ -17,8 +26,8 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Analyze',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="mic-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'mic' : 'mic-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -26,8 +35,8 @@ export default function TabLayout() {
         name="logs"
         options={{
           title: 'Logs',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'document-text' : 'document-text-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -35,8 +44,8 @@ export default function TabLayout() {
         name="insights"
         options={{
           title: 'Insights',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="stats-chart-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'stats-chart' : 'stats-chart-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -44,8 +53,8 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'settings' : 'settings-outline'} size={size} color={color} />
           ),
         }}
       />

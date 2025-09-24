@@ -3,16 +3,12 @@ import { requestRecordingPermissionsAsync } from 'expo-audio';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import React from 'react';
-import { Alert, LogBox, Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
-import { useAuthStore } from '../../src/store/auth';
+import { Alert, Image, LogBox, Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function HomeScreen() {
-  const { user, signOut, isGuest } = useAuthStore();
-
-  const handleSignOut = async () => {
-    await signOut();
-    router.replace('/auth');
-  };
+  function openSettings() {
+    router.push('/(tabs)/settings');
+  }
 
   React.useEffect(() => {
     let isMounted = true;
@@ -60,20 +56,79 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-rose-50">
       <View className="flex-row items-center justify-between px-6 pt-6">
+        <View style={{ width: 28 }} />
         <Text className="text-3xl font-extrabold text-neutral-900">Analyze</Text>
-        <TouchableOpacity onPress={handleSignOut} accessibilityRole="button">
+        <TouchableOpacity onPress={openSettings} accessibilityRole="button">
           <Ionicons name="settings-outline" size={28} color="#0b0b0b" />
         </TouchableOpacity>
       </View>
+
       <View className="flex-1 px-6 pt-6">
-        <TouchableOpacity className="bg-red-500 py-5 rounded-2xl items-center">
-          <View className="flex-row items-center gap-3">
-            <Ionicons name="mic-outline" size={22} color="#fff" />
-            <Text className="text-white text-xl font-bold">Start Listening</Text>
+        <Text className="text-3xl font-extrabold text-neutral-900 mb-6">Today</Text>
+
+        <View>
+          <View className="flex-row items-center mb-5">
+            <View className="w-16 h-16 bg-rose-100 rounded-2xl items-center justify-center mr-4">
+              <Ionicons name="fast-food-outline" size={26} color="#0b0b0b" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-2xl font-bold text-neutral-900">Hungry</Text>
+              <Text className="text-lg text-rose-600 mt-1">10:30 AM</Text>
+            </View>
           </View>
-        </TouchableOpacity>
+
+          <View className="flex-row items-center mb-5">
+            <View className="w-16 h-16 bg-rose-100 rounded-2xl items-center justify-center mr-4">
+              <Ionicons name="moon-outline" size={26} color="#0b0b0b" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-2xl font-bold text-neutral-900">Sleepy</Text>
+              <Text className="text-lg text-rose-600 mt-1">11:45 AM</Text>
+            </View>
+          </View>
+
+          <View className="flex-row items-center mb-5">
+            <View className="w-16 h-16 bg-rose-100 rounded-2xl items-center justify-center mr-4">
+              <Ionicons name="fast-food-outline" size={26} color="#0b0b0b" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-2xl font-bold text-neutral-900">Hungry</Text>
+              <Text className="text-lg text-rose-600 mt-1">1:15 PM</Text>
+            </View>
+          </View>
+
+          <View className="flex-row items-center mb-8">
+            <View className="w-16 h-16 bg-rose-100 rounded-2xl items-center justify-center mr-4">
+              <Ionicons name="moon-outline" size={26} color="#0b0b0b" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-2xl font-bold text-neutral-900">Sleepy</Text>
+              <Text className="text-lg text-rose-600 mt-1">2:30 PM</Text>
+            </View>
+          </View>
+        </View>
+
+        <View className="rounded-3xl overflow-hidden">
+          <View>
+            <Image
+              source={require('../../assets/images/analysis/baby.png')}
+              resizeMode="cover"
+              style={{ width: '100%', height: 280 }}
+            />
+            <View style={{ position: 'absolute', left: 20, bottom: 20, right: 20 }}>
+              <View className="flex-row items-end justify-between">
+                <Text className="text-white text-3xl font-extrabold pr-4" style={{ flexShrink: 1 }}>
+                  Is your baby{"\n"}crying now?
+                </Text>
+                <TouchableOpacity className="bg-red-600 px-6 py-3 rounded-full">
+                  <Text className="text-white text-lg font-bold">Record Now</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
       </View>
     </SafeAreaView>
   );
