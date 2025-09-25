@@ -1,0 +1,27 @@
+---
+alwaysApply: true
+---
+🎯 Purpose
+
+Defines the exact tool versions used in this Expo React Native project so code remains consistent across environments and AI doesn’t generate mismatched APIs.
+
+🔗 Core Versions
+
+- Expo SDK → ~51.0.0
+- React Native → 0.76.x (Expo-managed)
+- TypeScript → ~5.3.x
+- NativeWind → ^4.0.36
+- Tailwind CSS → ^3.4.1
+- Zustand → ^4.5.2
+- @tanstack/react-query → ^5.36.0
+- @supabase/supabase-js → ^2.44.0
+- react-i18next → ^13.2.2
+- i18next → ^23.10.1
+- expo-av → ~13.10.0
+- sentry-expo → ^7.0.0
+
+⚠️ Rules for Versions
+
+- Never upgrade dependencies without updating versions.md.
+- Code must target the versions listed above.
+- Example: React Query v5 APIs (useQuery, useMutation) only — don’t mix v4 syntax.
