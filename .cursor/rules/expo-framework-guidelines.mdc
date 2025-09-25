@@ -1,0 +1,212 @@
+---
+alwaysApply: true
+---
+
+# Expo (Framework) Guidelines
+
+## Purpose
+- Ensure all React Native work follows Expo SDK ~51 conventions.
+- Keep dependencies Expo-compatible and consistent with `versions.md`.
+
+## Versions and Compatibility
+- Expo SDK: `~51.0.0`
+- React Native: `0.76.x` (Expo-managed)
+- TypeScript: `~5.3.x`
+- Never upgrade without updating `versions.md` and `package.json` together.
+- If APIs change, add a migration doc under `docs/migrations/`.
+
+## Installing Dependencies
+- Prefer `expo install` for any package that has native modules to ensure Expo-compatible versions.
+- Web-only or pure JS libs can use `npm install`, but verify they don’t require native modules.
+- Project-standard libs (match versions in `versions.md`):
+  - NativeWind: `npm install nativewind tailwindcss`
+  - Zustand: `npm install zustand`
+  - React Query (v5): `npm install @tanstack/react-query`
+  - Supabase: `npm install @supabase/supabase-js`
+  - i18n: `npm install react-i18next i18next react-native-localize`
+  - Audio: `expo install expo-av`
+  - Sentry: `npx @sentry/wizard -i reactNative -p ios android`
+- Setup tasks:
+  - Tailwind: `npx tailwindcss init`
+  - Restart bundler after config or dependency changes: `expo start -c`
+- PRs introducing new libraries must include a working example (see `dependencies.md`).
+
+## Expo Router and Navigation
+- Use file-based routing under `app/`.
+- Define stacks/tabs in `_layout.tsx` files.
+- Prefer `router.push/back/replace` from `expo-router` over other nav libs.
+- Hide headers at the nearest layout for custom UI: `options: { headerShown: false }`.
+- Use `presentation` options when needed (e.g., `fullScreenModal`).
+- Do not mix multiple navigation frameworks.
+
+## Project Structure
+- Follow `folders.md`:
+  - `app/` → Expo Router screens & layouts
+  - `src/components/`, `src/components/ui/` → reusable UI & primitives
+  - `src/store/` → Zustand stores
+  - `src/api/` → Supabase API by domain
+  - `src/config/` → config (supabase, queryClient, audio, db)
+  - `src/locales/` → i18n JSON files
+  - `src/types/` → global TS types
+  - `src/utils/` → utilities
+- Use absolute imports `@/*` (configure `tsconfig.json` paths). Avoid `../../..` when possible.
+
+## Styling (NativeWind)
+- Use `className` utilities as the primary styling method.
+- Keep a clean utility-first approach; avoid mixing with `style` unless necessary.
+- Support dark mode with `useColorScheme` and `dark:` variants.
+- Maintain global theme in `tailwind.config.js`.
+
+## State and Data
+- Client state: Zustand (see `state-zustand.md`). Type state strictly.
+- Server state: React Query v5 (see `fetching-react-query.md`). Use `@/config/queryClient`.
+- Backend: Supabase v2 (see `data-supabase.md`). Keys/config in `@/config/supabase`.
+
+## Internationalization (i18n)
+- Use `react-i18next`; wrap app with provider.
+- Store keys in `src/locales` and avoid hardcoding user-facing strings.
+- Organize keys by feature (e.g., `auth.login.title`).
+- Support RTL for Arabic/Urdu via `I18nManager`.
+
+## Permissions and App Config
+- Request only necessary permissions and document them.
+- Manage permissions via `app.json`/`app.config.*` when required by a module.
+- For audio (record/playback), follow `expo-av.md` for permissions and lifecycle.
+
+## Environment and Secrets
+- Never hardcode secrets. Use app config, environment variables, or Expo runtime variables.
+- Do not commit secrets to VCS.
+
+## Build, Distribution, and OTA
+- Use EAS for builds/submit/updates.
+- OTA updates:
+  - Only ship JS/asset changes compatible with the current runtime.
+  - Test on a staging channel before promoting.
+- Keep versioning and release notes clear.
+
+## Debugging and DX
+- Use Expo Dev Menu and Metro logs.
+- Clear cache on config/dependency changes: `expo start -c`.
+- Add meaningful logs and error boundaries where appropriate.
+
+## Testing and Quality
+- Functional, typed, and declarative components; avoid classes.
+- TypeScript in strict mode; avoid `any`.
+- When adding new libraries, include a minimal working example in the PR.
+
+## Do Nots
+- Do not install native modules requiring custom native code without confirming Expo support.
+- Do not bypass `expo install` for RN packages that need native binaries.
+- Do not mix navigation frameworks.
+
+## References
+- `versions.md` for pinned versions
+- `dependencies.md` for install rules
+- `styling-nativewind.md` for UI
+- `state-zustand.md`, `fetching-react-query.md`, `data-supabase.md`
+- `locale.md` for i18n
+- `expo-av.md` for audio
+# Expo (Framework) Guidelines
+
+## Purpose
+- Ensure all React Native work follows Expo SDK ~51 conventions.
+- Keep dependencies Expo-compatible and consistent with `versions.md`.
+
+## Versions and Compatibility
+- Expo SDK: `~51.0.0`
+- React Native: `0.76.x` (Expo-managed)
+- TypeScript: `~5.3.x`
+- Never upgrade without updating `versions.md` and `package.json` together.
+- If APIs change, add a migration doc under `docs/migrations/`.
+
+## Installing Dependencies
+- Prefer `expo install` for any package that has native modules to ensure Expo-compatible versions.
+- Web-only or pure JS libs can use `npm install`, but verify they don’t require native modules.
+- Project-standard libs (match versions in `versions.md`):
+  - NativeWind: `npm install nativewind tailwindcss`
+  - Zustand: `npm install zustand`
+  - React Query (v5): `npm install @tanstack/react-query`
+  - Supabase: `npm install @supabase/supabase-js`
+  - i18n: `npm install react-i18next i18next react-native-localize`
+  - Audio: `expo install expo-av`
+  - Sentry: `npx @sentry/wizard -i reactNative -p ios android`
+- Setup tasks:
+  - Tailwind: `npx tailwindcss init`
+  - Restart bundler after config or dependency changes: `expo start -c`
+- PRs introducing new libraries must include a working example (see `dependencies.md`).
+
+## Expo Router and Navigation
+- Use file-based routing under `app/`.
+- Define stacks/tabs in `_layout.tsx` files.
+- Prefer `router.push/back/replace` from `expo-router` over other nav libs.
+- Hide headers at the nearest layout for custom UI: `options: { headerShown: false }`.
+- Use `presentation` options when needed (e.g., `fullScreenModal`).
+- Do not mix multiple navigation frameworks.
+
+## Project Structure
+- Follow `folders.md`:
+  - `app/` → Expo Router screens & layouts
+  - `src/components/`, `src/components/ui/` → reusable UI & primitives
+  - `src/store/` → Zustand stores
+  - `src/api/` → Supabase API by domain
+  - `src/config/` → config (supabase, queryClient, audio, db)
+  - `src/locales/` → i18n JSON files
+  - `src/types/` → global TS types
+  - `src/utils/` → utilities
+- Use absolute imports `@/*` (configure `tsconfig.json` paths). Avoid `../../..` when possible.
+
+## Styling (NativeWind)
+- Use `className` utilities as the primary styling method.
+- Keep a clean utility-first approach; avoid mixing with `style` unless necessary.
+- Support dark mode with `useColorScheme` and `dark:` variants.
+- Maintain global theme in `tailwind.config.js`.
+
+## State and Data
+- Client state: Zustand (see `state-zustand.md`). Type state strictly.
+- Server state: React Query v5 (see `fetching-react-query.md`). Use `@/config/queryClient`.
+- Backend: Supabase v2 (see `data-supabase.md`). Keys/config in `@/config/supabase`.
+
+## Internationalization (i18n)
+- Use `react-i18next`; wrap app with provider.
+- Store keys in `src/locales` and avoid hardcoding user-facing strings.
+- Organize keys by feature (e.g., `auth.login.title`).
+- Support RTL for Arabic/Urdu via `I18nManager`.
+
+## Permissions and App Config
+- Request only necessary permissions and document them.
+- Manage permissions via `app.json`/`app.config.*` when required by a module.
+- For audio (record/playback), follow `expo-av.md` for permissions and lifecycle.
+
+## Environment and Secrets
+- Never hardcode secrets. Use app config, environment variables, or Expo runtime variables.
+- Do not commit secrets to VCS.
+
+## Build, Distribution, and OTA
+- Use EAS for builds/submit/updates.
+- OTA updates:
+  - Only ship JS/asset changes compatible with the current runtime.
+  - Test on a staging channel before promoting.
+- Keep versioning and release notes clear.
+
+## Debugging and DX
+- Use Expo Dev Menu and Metro logs.
+- Clear cache on config/dependency changes: `expo start -c`.
+- Add meaningful logs and error boundaries where appropriate.
+
+## Testing and Quality
+- Functional, typed, and declarative components; avoid classes.
+- TypeScript in strict mode; avoid `any`.
+- When adding new libraries, include a minimal working example in the PR.
+
+## Do Nots
+- Do not install native modules requiring custom native code without confirming Expo support.
+- Do not bypass `expo install` for RN packages that need native binaries.
+- Do not mix navigation frameworks.
+
+## References
+- `versions.md` for pinned versions
+- `dependencies.md` for install rules
+- `styling-nativewind.md` for UI
+- `state-zustand.md`, `fetching-react-query.md`, `data-supabase.md`
+- `locale.md` for i18n
+- `expo-av.md` for audio
