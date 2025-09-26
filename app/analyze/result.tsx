@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Audio } from 'expo-av';
+import { Audio, Sound } from 'expo-audio';
 import { router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -12,7 +12,7 @@ export default function AnalyzeResultScreen() {
   const [notes, setNotes] = React.useState('');
   const { user } = useAuthStore();
   const { activeBabyId } = useBabiesStore();
-  const [sound, setSound] = React.useState<Audio.Sound | null>(null);
+  const [sound, setSound] = React.useState<Sound | null>(null);
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
 

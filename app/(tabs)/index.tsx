@@ -3,7 +3,7 @@ import { requestRecordingPermissionsAsync } from 'expo-audio';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import React from 'react';
-import { Alert, Image, LogBox, Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function HomeScreen() {
   function openSettings() {
@@ -12,8 +12,6 @@ export default function HomeScreen() {
 
   React.useEffect(() => {
     let isMounted = true;
-    // Silence expo-av deprecation warning in Expo SDK 53 until migration
-    LogBox.ignoreLogs([/Expo AV has been deprecated/i]);
     async function requestPermissionsOnce() {
       try {
         const AsyncStorage = (await import('@react-native-async-storage/async-storage')).default;

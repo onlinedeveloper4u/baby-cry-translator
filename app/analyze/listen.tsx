@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Audio } from 'expo-av';
+import { Audio, Recording, requestPermissionsAsync, setAudioModeAsync, RecordingOptionsPresets } from 'expo-audio';
 import { router } from 'expo-router';
 import React from 'react';
 import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
@@ -9,7 +9,7 @@ export default function ListenScreen() {
   const MAX_SECONDS = 15;
   const [seconds, setSeconds] = React.useState(0);
   const [isRecording, setIsRecording] = React.useState(false);
-  const recordingRef = React.useRef<Audio.Recording | null>(null);
+  const recordingRef = React.useRef<Recording | null>(null);
 
   React.useEffect(() => {
     let isMounted = true;
@@ -52,10 +52,10 @@ export default function ListenScreen() {
     setSeconds(0);
     setIsRecording(true);
     try {
-      await Audio.requestPermissionsAsync();
-      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-      const recording = new Audio.Recording();
-      await recording.prepareToRecordAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+      await requestPermissionsAsync();
+      await setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+      const recording = new Recording();
+      await recording.prepareToRecordAsync(RecordingOptionsPresets.HIGH_QUALITY);
       await recording.startAsync();
       recordingRef.current = recording;
 

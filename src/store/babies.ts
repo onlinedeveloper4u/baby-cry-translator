@@ -7,12 +7,14 @@ export interface BabyProfile {
   birthDate?: string; // ISO date
   gender?: 'male' | 'female' | 'unspecified';
   notes?: string;
+  avatarUrl?: string;
 }
 
 interface BabiesState {
   profiles: BabyProfile[];
   activeBabyId: string | null;
   setActiveLocalOnly: (id: string | null) => void;
+  setProfiles: (profiles: BabyProfile[], activeId?: string | null) => Promise<void>;
   load: () => Promise<void>;
   add: (profile: Omit<BabyProfile, 'id'>) => Promise<void>;
   update: (id: string, profile: Partial<Omit<BabyProfile, 'id'>>) => Promise<void>;
@@ -30,6 +32,12 @@ export const useBabiesStore = create<BabiesState>((set, get) => ({
   profiles: [],
   activeBabyId: null,
   setActiveLocalOnly: (id) => set({ activeBabyId: id }),
+
+  setProfiles: async (profiles, activeId) => {
+    const next = { profiles, activeBabyId: activeId ?? get().activeBabyId };
+    set(next);
+    await saveToStorage(next);
+  },
 
   load: async () => {
     try {

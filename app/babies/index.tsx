@@ -1,33 +1,61 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React from 'react';
-import { Alert, FlatList, SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, SafeAreaView, Text, TouchableOpacity, View, Image } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useAuthStore } from '../../src/store/auth';
+import { listBabies, getAvatarSignedUrl } from '../../src/api/babies';
 import { BabyProfile, useBabiesStore } from '../../src/store/babies';
 
 export default function BabiesScreen() {
-  const { profiles, activeBabyId, add, update, remove, setActive, load } = useBabiesStore();
-  const [isAdding, setIsAdding] = React.useState(false);
-  const [name, setName] = React.useState('');
-  const [birthDate, setBirthDate] = React.useState('');
-  const [notes, setNotes] = React.useState('');
+  const { user } = useAuthStore();
+  const { profiles, activeBabyId, remove, setActive, load, setProfiles } = useBabiesStore();
 
   React.useEffect(() => {
     load();
   }, [load]);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      let isActive = true;
+      async function sync() {
+        if (!user?.id) return;
+        try {
+          const rows = await listBabies(user.id);
+          const mapped: BabyProfile[] = await Promise.all(
+            rows.map(async (r) => {
+              let signedUrl: string | undefined = undefined;
+              if (r.avatar_url) {
+                const url = await getAvatarSignedUrl(r.avatar_url, 3600);
+                if (url) signedUrl = url;
+              }
+              return {
+                id: r.id,
+                name: r.name,
+                birthDate: r.birth_date ?? undefined,
+                notes: r.notes ?? undefined,
+                gender: (r.gender as any) ?? 'unspecified',
+                avatarUrl: signedUrl,
+              } as BabyProfile;
+            })
+          );
+          if (isActive) await setProfiles(mapped, mapped[0]?.id ?? null);
+        } catch {
+          // ignore fetch errors; remain on local cache
+        }
+      }
+      sync();
+      return () => {
+        isActive = false;
+      };
+    }, [user?.id, setProfiles])
+  );
+
   function handleBack() {
     router.back();
   }
 
-  async function handleAdd() {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    await add({ name: trimmed, birthDate: birthDate || undefined, notes: notes || undefined, gender: 'unspecified' });
-    setName('');
-    setBirthDate('');
-    setNotes('');
-    setIsAdding(false);
-  }
+  // Inline add removed; adding is done via /babies/edit screen
 
   function confirmDelete(profile: BabyProfile) {
     Alert.alert('Delete Profile', `Remove ${profile.name}?`, [
@@ -42,11 +70,25 @@ export default function BabiesScreen() {
       <View className={`rounded-2xl p-4 mb-3 border ${isActive ? 'border-rose-400 bg-rose-50/60' : 'border-rose-100 bg-rose-50/40'}`}>
         <View className="flex-row items-center justify-between">
           <TouchableOpacity className="flex-1" onPress={() => setActive(item.id)}>
-            <Text className="text-lg font-semibold text-neutral-900">{item.name}</Text>
-            {!!item.birthDate && <Text className="text-sm text-amber-800 mt-1">DOB: {item.birthDate}</Text>}
-            {!!item.notes && <Text className="text-sm text-amber-800 mt-1" numberOfLines={2}>{item.notes}</Text>}
+            <View className="flex-row items-center gap-3">
+              <View className="w-10 h-10 rounded-full bg-rose-100 overflow-hidden items-center justify-center">
+                {item.avatarUrl ? (
+                  <Image source={{ uri: item.avatarUrl }} className="w-10 h-10" resizeMode="cover" />
+                ) : (
+                  <Ionicons name="happy-outline" size={20} color="#9CA3AF" />
+                )}
+              </View>
+              <View className="flex-1">
+                <Text className="text-lg font-semibold text-neutral-900">{item.name}</Text>
+                {!!item.birthDate && <Text className="text-sm text-amber-800 mt-0.5">DOB: {item.birthDate}</Text>}
+                {!!item.notes && <Text className="text-sm text-amber-800 mt-0.5" numberOfLines={1}>{item.notes}</Text>}
+              </View>
+            </View>
           </TouchableOpacity>
-          <View className="flex-row items-center gap-3">
+          <View className="flex-row items-center gap-4">
+            <TouchableOpacity onPress={() => router.push({ pathname: '/babies/edit', params: { id: item.id } })}>
+              <Ionicons name="create-outline" size={22} color="#0b0b0b" />
+            </TouchableOpacity>
             <TouchableOpacity onPress={() => confirmDelete(item)}>
               <Ionicons name="trash-outline" size={22} color="#9CA3AF" />
             </TouchableOpacity>
@@ -63,53 +105,12 @@ export default function BabiesScreen() {
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text className="text-2xl font-bold text-neutral-900">Baby Profiles</Text>
-        <View style={{ width: 24 }} />
+        <TouchableOpacity onPress={() => router.push({ pathname: '/babies/edit' })}>
+          <Ionicons name="add" size={24} color="#000" />
+        </TouchableOpacity>
       </View>
 
       <View className="flex-1 px-6">
-        {isAdding ? (
-          <View className="rounded-2xl p-4 mb-4 border border-rose-200 bg-rose-50">
-            <Text className="text-base font-semibold text-neutral-900 mb-2">Add Baby</Text>
-            <TextInput
-              placeholder="Name"
-              value={name}
-              onChangeText={setName}
-              className="border border-rose-200 rounded-xl px-3 py-2 bg-white mb-2"
-              placeholderTextColor="#9CA3AF"
-            />
-            <TextInput
-              placeholder="Birth date (YYYY-MM-DD)"
-              value={birthDate}
-              onChangeText={setBirthDate}
-              className="border border-rose-200 rounded-xl px-3 py-2 bg-white mb-2"
-              placeholderTextColor="#9CA3AF"
-            />
-            <TextInput
-              placeholder="Notes"
-              value={notes}
-              onChangeText={setNotes}
-              className="border border-rose-200 rounded-xl px-3 py-2 bg-white mb-3"
-              placeholderTextColor="#9CA3AF"
-              multiline
-            />
-            <View className="flex-row gap-3">
-              <TouchableOpacity className="bg-red-500 rounded-xl px-4 py-2" onPress={handleAdd}>
-                <Text className="text-white font-semibold">Save</Text>
-              </TouchableOpacity>
-              <TouchableOpacity className="bg-white border border-rose-200 rounded-xl px-4 py-2" onPress={() => setIsAdding(false)}>
-                <Text className="text-neutral-900 font-semibold">Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ) : (
-          <TouchableOpacity className="bg-red-500 rounded-2xl px-4 py-3 mb-4 self-start" onPress={() => setIsAdding(true)}>
-            <View className="flex-row items-center gap-2">
-              <Ionicons name="add" size={18} color="#fff" />
-              <Text className="text-white font-semibold">Add Baby</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-
         <FlatList
           data={profiles}
           keyExtractor={(item) => item.id}
