@@ -131,7 +131,7 @@ export default function BabiesScreen() {
           <TouchableOpacity
             className="flex-row items-center flex-1"
             onPress={() => {
-              setActive(item.id);
+              // Row tap navigates to the baby's profile. Do not change active here.
               router.push(`/babies/${item.id}`);
             }}
           >
