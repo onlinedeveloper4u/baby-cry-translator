@@ -79,14 +79,81 @@ export async function updateBaby(id: string, patch: BabyUpdateInput): Promise<Ba
   return data as BabyRow;
 }
 
-export async function deleteBaby(id: string): Promise<void> {
-  const { error } = await supabase.from('babies').delete().eq('id', id);
-  if (error) throw error;
+export interface DeleteBabyResult {
+  dbDeleted: boolean;
+  storageDeleted: boolean;
+  dbError?: any;
+  storageError?: any;
+}
+
+export async function deleteBaby(id: string): Promise<DeleteBabyResult> {
+  // Try to fetch avatar path first so we can delete the storage object (best-effort)
+  const { data: row, error: fetchErr } = await supabase.from('babies').select('avatar_url').eq('id', id).single();
+  if (fetchErr) {
+    console.warn('[deleteBaby] fetch row error', fetchErr);
+    return { dbDeleted: false, storageDeleted: false, dbError: fetchErr };
+  }
+  const avatarUrl = (row as any)?.avatar_url as string | null;
+  let storageDeleted = false;
+  let storageErr: any = null;
+  if (avatarUrl) {
+    // Determine storage path. If avatarUrl is already a storage path (no protocol), use it.
+    let storagePath = avatarUrl;
+    if (/^https?:\/\//i.test(storagePath)) {
+      try {
+        const url = new URL(storagePath);
+        // Try to extract path after any occurrence of 'baby-avatars/' in the pathname
+        const marker = '/baby-avatars/';
+        const idx = url.pathname.indexOf(marker);
+        if (idx !== -1) {
+          storagePath = decodeURIComponent(url.pathname.slice(idx + marker.length));
+        } else {
+          // Try common signed-url pattern
+          const marker2 = '/object/sign/baby-avatars/';
+          const idx2 = url.pathname.indexOf(marker2);
+          if (idx2 !== -1) {
+            storagePath = decodeURIComponent(url.pathname.slice(idx2 + marker2.length));
+          } else {
+            // Could not determine storage path from URL; skip deletion
+            storagePath = '';
+          }
+        }
+      } catch {
+        storagePath = '';
+      }
+    }
+
+    if (storagePath) {
+      try {
+        const { error: delErr } = await supabase.storage.from('baby-avatars').remove([storagePath]);
+        if (delErr) {
+          console.warn('[deleteBaby] storage remove failed', delErr);
+          // continue
+          storageErr = delErr;
+        } else {
+          storageDeleted = true;
+        }
+      } catch (err) {
+        console.warn('[deleteBaby] storage remove threw', err);
+        storageErr = err;
+      }
+    }
+  }
+  // Always attempt to delete the DB row.
+  const { data: delData, error: delErr } = await supabase.from('babies').delete().eq('id', id).select();
+  if (delErr) {
+    console.warn('[deleteBaby] db delete error', delErr);
+    return { dbDeleted: false, storageDeleted, dbError: delErr, storageError: storageErr };
+  }
+  // If delete returned rows, consider it deleted
+  const dbDeleted = Array.isArray(delData) ? delData.length > 0 : !!delData;
+  console.log('[deleteBaby] deleted rows', delData);
+  return { dbDeleted, storageDeleted, storageError: storageErr };
 }
 
 // Upload a local image file URI to Supabase Storage and return its public URL
 // Uploads and returns the STORAGE PATH (not a public URL), e.g., `${userId}/timestamp.ext`
-export async function uploadBabyAvatar(fileUri: string, userId: string): Promise<string> {
+export async function uploadBabyAvatar(fileUri: string, userId: string): Promise<{ path: string; previewUrl?: string }> {
   let sourceUri = fileUri;
   // Handle Android content:// URIs by copying to a temporary file first
   if (sourceUri.startsWith('content://')) {
@@ -107,38 +174,80 @@ export async function uploadBabyAvatar(fileUri: string, userId: string): Promise
     }
   }
   const path = `${userId}/${Date.now()}.jpg`;
-  // Try using FileSystem.uploadAsync first (more reliable on Android)
+  // Prefer reading file as base64 via expo-file-system and upload via Supabase client
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const FileSystem = require('expo-file-system');
-    const uploadUrl = `${supabaseUrl}/storage/v1/object/baby-avatars/${encodeURIComponent(path)}`;
-    const token = await getAccessToken();
-    const headers: Record<string, string> = {
-      'Content-Type': 'image/jpeg',
-      apikey: supabaseAnonKey,
-    };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    const result = await FileSystem.uploadAsync(uploadUrl, sourceUri, {
-      httpMethod: 'POST',
-      headers,
-      uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
-    });
-    if (result.status !== 200 && result.status !== 201) {
-      throw new Error(`Upload failed with status ${result.status}`);
+    try {
+      const base64 = await FileSystem.readAsStringAsync(sourceUri, { encoding: FileSystem.EncodingType.Base64 });
+      // Try to decode base64 to a Uint8Array. Prefer Buffer if available.
+      let uint8: Uint8Array | null = null;
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const Buffer = require('buffer').Buffer;
+        const buf = Buffer.from(base64, 'base64');
+        uint8 = new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+      } catch {
+        // Fallback to atob if Buffer is not available
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const atobFn: any = typeof global.atob === 'function' ? global.atob : undefined;
+        if (atobFn) {
+          const binary = atobFn(base64);
+          const len = binary.length;
+          const arr = new Uint8Array(len);
+          for (let i = 0; i < len; i++) arr[i] = binary.charCodeAt(i);
+          uint8 = arr;
+        }
+      }
+
+      if (!uint8) throw new Error('Unable to decode base64 for upload');
+
+      const contentType = 'image/jpeg';
+      const ext = 'jpg';
+      const blobPath = `${userId}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from('baby-avatars').upload(blobPath, uint8, {
+        contentType,
+        upsert: true,
+      });
+      if (upErr) throw upErr;
+      // Try to create a signed URL for preview
+      try {
+        const { data: signedData, error: signedErr } = await supabase.storage.from('baby-avatars').createSignedUrl(blobPath, 60 * 60);
+        if (!signedErr && signedData?.signedUrl) return { path: blobPath, previewUrl: signedData.signedUrl };
+      } catch {
+        // ignore
+      }
+      return { path: blobPath };
+    } catch (inner) {
+      // If reading as base64 fails, fall through to fetch/blob approach
+      console.warn('[uploadBabyAvatar] base64 read failed, falling back to fetch blob', inner);
     }
-    return path;
-  } catch (e) {
-    // Fallback to Storage client using fetch blob
+  } catch {
+    // expo-file-system not available or failed; fall back below
+  }
+
+  // Final fallback: try fetching the URI and upload as blob/arrayBuffer
+  try {
     const res = await fetch(sourceUri);
-    const blob = await res.blob();
-    const ext = (blob.type?.split('/')?.[1] || 'jpg').toLowerCase();
+    const arrayBuffer = await res.arrayBuffer();
+    const ext = 'jpg';
     const blobPath = `${userId}/${Date.now()}.${ext}`;
-    const { error: upErr } = await supabase.storage.from('baby-avatars').upload(blobPath, blob, {
-      contentType: blob.type || 'image/jpeg',
+    const { error: uploadError } = await supabase.storage.from('baby-avatars').upload(blobPath, arrayBuffer, {
+      contentType: 'image/jpeg',
       upsert: true,
     });
-    if (upErr) throw upErr;
-    return blobPath;
+    if (uploadError) throw uploadError;
+    // Try to return a signed preview URL
+    try {
+      const { data: signedData, error: signedErr } = await supabase.storage.from('baby-avatars').createSignedUrl(blobPath, 60 * 60);
+      if (!signedErr && signedData?.signedUrl) return { path: blobPath, previewUrl: signedData.signedUrl };
+    } catch {
+      // ignore
+    }
+    return { path: blobPath };
+  } catch (finalErr) {
+    // Surface same error to caller
+    throw finalErr;
   }
 }
 

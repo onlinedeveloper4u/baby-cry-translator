@@ -57,7 +57,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signOut: async () => {
     set({ loading: true });
     await supabase.auth.signOut();
-    await AsyncStorage.removeItem('isGuest');
+    // Do not remove the key entirely; keep the key present and set to 'false'
+    // so we avoid deleting storage keys used for other app data.
+    try {
+      await AsyncStorage.setItem('isGuest', 'false');
+    } catch {
+      // ignore storage write errors
+    }
     set({ user: null, session: null, loading: false, isGuest: false });
   },
 
