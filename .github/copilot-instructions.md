@@ -146,7 +146,7 @@ Note: the original source files are kept in `.cursor/rules` and this file mirror
   - React Query (v5): `npm install @tanstack/react-query`
   - Supabase: `npm install @supabase/supabase-js`
   - i18n: `npm install react-i18next i18next react-native-localize`
-  - Audio: `expo install expo-av`
+  - Audio: `expo install expo-audio`
   - Sentry: `npx @sentry/wizard -i reactNative -p ios android`
 
 ### Expo Router and Navigation
@@ -189,7 +189,7 @@ Note: the original source files are kept in `.cursor/rules` and this file mirror
 ### Permissions and App Config
 - Request only necessary permissions and document them.
 - Manage permissions via `app.json`/`app.config.*` when required by a module.
-- For audio (record/playback), follow `expo-av.md` for permissions and lifecycle.
+- For audio (record/playback), follow `expo-audio.md` for permissions and lifecycle.
 
 ### Environment and Secrets
 - Never hardcode secrets. Use app config, environment variables, or Expo runtime variables.
@@ -217,9 +217,9 @@ Note: the original source files are kept in `.cursor/rules` and this file mirror
 - Do not bypass `expo install` for RN packages that need native binaries.
 - Do not mix navigation frameworks.
 
-## Audio Handling (Expo AV)
+## Audio Handling (Expo Audio)
 
-- Use `expo-av` for recording and playback.
+- Use `expo-audio` for recording and playback.
 - Encapsulate logic in hooks (`useAudioRecorder`, `useAudioPlayer`).
 - Request microphone permission before recording.
 - Save recordings temporarily; upload to Supabase Storage.
@@ -228,44 +228,6 @@ Note: the original source files are kept in `.cursor/rules` and this file mirror
 - Use React Query mutations for uploads.
 - Keep audio constants in `src/config/audio.ts`.
 - Show user feedback (waveform, timer).
-
-## Dependency & Configuration Rules
-
-- **Always install and configure dependencies before use.**
-- Use `expo install` whenever possible to ensure Expo-compatible versions.
-- Examples:
-  - NativeWind → `npm install nativewind tailwindcss`
-  - Zustand → `npm install zustand`
-  - React Query → `npm install @tanstack/react-query`
-  - Supabase → `npm install @supabase/supabase-js`
-  - i18n → `npm install react-i18next i18next react-native-localize`
-  - Sentry → `npx @sentry/wizard -i reactNative -p ios android`
-
-- **Run setup commands**:
-  - Tailwind: `npx tailwindcss init`
-  - Restart bundler: `expo start -c`
-
-- **Do not commit code depending on a library that isnt fully set up.**
-- PRs introducing new libraries must include a working example.
-
-## Versions (Pinned)
-
-- Expo SDK → ~51.0.0
-- React Native → 0.76.x (Expo-managed)
-- TypeScript → ~5.3.x
-- NativeWind → ^4.0.36
-- Tailwind CSS → ^3.4.1
-- Zustand → ^4.5.2
-- @tanstack/react-query → ^5.36.0
-- @supabase/supabase-js → ^2.44.0
-- react-i18next → ^13.2.2
-- i18next → ^23.10.1
-- expo-av → ~13.10.0
-- sentry-expo → ^7.0.0
-
-Rules for versions:
-
-- Never upgrade dependencies without updating versions.md.
 
 ## Data Layer (Supabase)
 

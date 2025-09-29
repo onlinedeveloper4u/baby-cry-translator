@@ -2,9 +2,9 @@
 description: When working with audio playback, record etc.
 alwaysApply: false
 ---
-# 🎤 Audio Handling (Expo AV)
+# 🎤 Audio Handling (Expo Audio)
 
-- Use `expo-av` for recording and playback.
+- Use `expo-audio` for recording and playback.
 - Encapsulate logic in hooks (`useAudioRecorder`, `useAudioPlayer`).
 - Request microphone permission before recording.
 - Save recordings temporarily; upload to Supabase Storage.

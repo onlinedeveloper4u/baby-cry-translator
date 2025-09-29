@@ -1,10 +1,11 @@
 ---
+trigger: model_decision
 description: When working with audio playback, record etc.
-alwaysApply: false
 ---
-# 🎤 Audio Handling (Expo AV)
 
-- Use `expo-av` for recording and playback.
+# 🎤 Audio Handling (Expo Audio)
+
+- Use `expo-audio` for recording and playback.
 - Encapsulate logic in hooks (`useAudioRecorder`, `useAudioPlayer`).
 - Request microphone permission before recording.
 - Save recordings temporarily; upload to Supabase Storage.
