@@ -32,7 +32,12 @@
           "resizeMode": "cover"
         }
       ],
-      "expo-audio"
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow Baby Cry Translator to access your microphone."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

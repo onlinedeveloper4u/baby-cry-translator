@@ -1,59 +1,63 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Audio, Sound } from 'expo-audio';
 import { router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { uploadAudioAndCreateRecording } from '../../src/api/recordings';
 import { useAuthStore } from '../../src/store/auth';
 import { useBabiesStore } from '../../src/store/babies';
+import { useCustomAudioPlayer } from '../../src/hooks/useAudioPlayer';
 
 export default function AnalyzeResultScreen() {
   const { uri = '', ts = '' } = useLocalSearchParams<{ uri?: string; ts?: string }>();
   const [notes, setNotes] = React.useState('');
   const { user } = useAuthStore();
   const { activeBabyId } = useBabiesStore();
-  const [sound, setSound] = React.useState<Sound | null>(null);
-  const [isPlaying, setIsPlaying] = React.useState(false);
+  const { isPlaying, audioError, audioLoaded, togglePlay } = useCustomAudioPlayer(uri && uri !== 'undefined' ? String(uri) : null);
+  const [showBabyRequired, setShowBabyRequired] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
 
   React.useEffect(() => {
-    let mounted = true;
-    (async () => {
-      if (!uri) return;
-      try {
-        const { sound } = await Audio.Sound.createAsync({ uri: String(uri) });
-        if (mounted) setSound(sound);
-      } catch {
-        // ignore
+    // Check if audio file exists and is valid
+    const checkAudioFile = async () => {
+      if (uri && uri !== 'undefined') {
+        try {
+          const FileSystem = require('expo-file-system');
+          const fileInfo = await FileSystem.getInfoAsync(String(uri));
+          if (fileInfo.exists && fileInfo.size && fileInfo.size > 0) {
+            // Audio file check is now handled by the hook
+          } else {
+            console.warn('Audio file does not exist or is empty:', fileInfo);
+          }
+        } catch (error) {
+          console.warn('Error checking audio file:', error);
+        }
       }
-    })();
-    return () => {
-      mounted = false;
-      if (sound) sound.unloadAsync().catch(() => undefined);
     };
+
+    checkAudioFile();
   }, [uri]);
 
-  async function togglePlay() {
-    if (!sound) return;
-    const status = await sound.getStatusAsync();
-    if (!('isLoaded' in status) || !status.isLoaded) return;
-    if (status.isPlaying) {
-      await sound.pauseAsync();
-      setIsPlaying(false);
-    } else {
-      await sound.playAsync();
-      setIsPlaying(true);
-    }
-  }
+
 
   async function handleSave() {
-    if (!user?.id || !activeBabyId || !uri) return;
+    if (!user?.id || !activeBabyId || !uri || uri === 'undefined') {
+      if (!activeBabyId) {
+        setShowBabyRequired(true);
+        return;
+      }
+      console.warn('Missing required data for saving:', { userId: user?.id, activeBabyId, uri });
+      return;
+    }
+
     try {
       setSaving(true);
+      console.log('Saving recording:', { userId: user.id, babyId: activeBabyId, fileUri: uri, notes });
       await uploadAudioAndCreateRecording({ userId: user.id, babyId: activeBabyId, fileUri: String(uri), notes });
+      console.log('Recording saved successfully');
       router.replace('/(tabs)/logs');
-    } catch {
-      // ignore for now
+    } catch (error) {
+      console.error('Error saving recording:', error);
+      // TODO: Show user-friendly error message
     } finally {
       setSaving(false);
     }
@@ -77,29 +81,37 @@ export default function AnalyzeResultScreen() {
         </View>
 
         <Text className="text-3xl font-extrabold text-neutral-900 mb-4">Audio Thumbnail</Text>
-        <View className="bg-rose-100 rounded-2xl p-5 flex-row items-center justify-between mb-8">
-          <View>
+        <View className="bg-rose-100 rounded-2xl p-6 flex-row items-center justify-between mb-8">
+          <View style={{ flex: 1 }}>
             <Text className="text-xl font-extrabold text-neutral-900">Cry Recording</Text>
             <Text className="text-lg text-rose-600 mt-1">{ts ? String(ts) : 'Just now'}</Text>
           </View>
-          <TouchableOpacity onPress={togglePlay} className="w-14 h-14 rounded-full bg-red-600 items-center justify-center">
-            <Ionicons name={isPlaying ? 'pause' : 'play'} size={26} color="#fff" />
+          <TouchableOpacity
+            onPress={togglePlay}
+            disabled={audioError || !audioLoaded}
+            className={`w-16 h-16 rounded-full items-center justify-center ml-4 ${audioError ? 'bg-gray-400' : 'bg-red-600'}`}
+          >
+            <Ionicons
+              name={audioError ? 'alert-circle' : isPlaying ? 'pause' : 'play'}
+              size={30}
+              color={audioError ? '#fff' : '#fff'}
+            />
           </TouchableOpacity>
         </View>
 
         <Text className="text-3xl font-extrabold text-neutral-900 mb-4">Prediction Breakdown</Text>
         <View className="flex-row justify-between mb-10">
-          <View>
-            <Text className="text-2xl text-neutral-900">Hunger</Text>
-            <Text className="text-xl text-neutral-900">85%</Text>
+          <View style={{ flex: 1 }}>
+            <Text className="text-lg text-rose-600">Hunger</Text>
+            <Text className="text-2xl text-neutral-900">85%</Text>
           </View>
-          <View>
-            <Text className="text-2xl text-neutral-900">Discomfort</Text>
-            <Text className="text-xl text-neutral-900">10%</Text>
+          <View style={{ flex: 1 }}>
+            <Text className="text-lg text-rose-600">Discomfort</Text>
+            <Text className="text-2xl text-neutral-900">10%</Text>
           </View>
-          <View>
-            <Text className="text-2xl text-neutral-900">Other</Text>
-            <Text className="text-xl text-neutral-900">5%</Text>
+          <View style={{ flex: 1 }}>
+            <Text className="text-lg text-rose-600">Other</Text>
+            <Text className="text-2xl text-neutral-900">5%</Text>
           </View>
         </View>
 
@@ -117,10 +129,29 @@ export default function AnalyzeResultScreen() {
           <TouchableOpacity className="bg-rose-100 px-6 py-4 rounded-2xl">
             <Text className="text-neutral-900 text-lg font-semibold">Delete</Text>
           </TouchableOpacity>
-          <TouchableOpacity className="bg-red-600 px-6 py-4 rounded-2xl" onPress={handleSave} disabled={saving}>
+          <TouchableOpacity
+            className="bg-red-600 px-6 py-4 rounded-2xl"
+            onPress={handleSave}
+            disabled={saving || !uri || uri === 'undefined' || audioError || showBabyRequired}
+          >
             <Text className="text-white text-lg font-bold">{saving ? 'Saving…' : 'Save'}</Text>
           </TouchableOpacity>
         </View>
+
+        {audioError && (
+          <View className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
+            <View className="flex-row items-center mb-2">
+              <Ionicons name="alert-circle" size={20} color="#dc2626" />
+              <Text className="text-red-800 text-lg font-semibold ml-2">Audio Error</Text>
+            </View>
+            <Text className="text-red-700 mb-3">
+              Unable to load the audio file. The recording may be corrupted or the file format is not supported.
+            </Text>
+            <Text className="text-red-600 text-sm font-mono">
+              URI: {uri ? String(uri).substring(0, 50) + '...' : 'No URI'}
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
