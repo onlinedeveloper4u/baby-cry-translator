@@ -35,20 +35,27 @@ export async function deleteRecording(recordingId: string) {
 
 export async function uploadAudioAndCreateRecording(input: SaveRecordingInput) {
   const { userId, babyId, fileUri, notes, meta } = input;
-  const fileName = `${userId}/${Date.now()}.m4a`;
+
+  // Determine file extension and content type based on the actual file
+  const FileSystem = require('expo-file-system');
+  const fileInfo = await FileSystem.getInfoAsync(fileUri);
+  const fileExtension = fileInfo.uri?.split('.').pop()?.toLowerCase() || 'm4a';
+  const fileName = `${userId}/${Date.now()}.${fileExtension}`;
+  const contentType = fileExtension === 'wav' ? 'audio/wav' : 'audio/m4a';
 
   try {
     // Get file info to check if it exists and has content
-    const FileSystem = require('expo-file-system');
-    const fileInfo = await FileSystem.getInfoAsync(fileUri);
     console.log('Audio file info before upload:', {
       exists: fileInfo.exists,
       size: fileInfo.size,
-      uri: fileUri
+      uri: fileUri,
+      extension: fileExtension,
+      contentType
     });
 
     if (!fileInfo.exists || fileInfo.size < 1024) { // Minimum 1KB for valid audio
-      throw new Error('Audio file is too small');
+      console.warn('Audio file too small or missing:', fileInfo);
+      throw new Error('Audio file is too small or corrupted');
     }
 
     console.log(`Uploading file (${fileInfo.size} bytes) to storage...`);
@@ -57,7 +64,7 @@ export async function uploadAudioAndCreateRecording(input: SaveRecordingInput) {
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('audio')
       .upload(fileName, fileUri, {
-        contentType: 'audio/m4a',
+        contentType,
         upsert: false,
         cacheControl: '3600',
       });
@@ -70,6 +77,20 @@ export async function uploadAudioAndCreateRecording(input: SaveRecordingInput) {
     // Get public URL
     const { data: { publicUrl } } = supabase.storage.from('audio').getPublicUrl(fileName);
     console.log('File uploaded successfully. Public URL:', publicUrl);
+
+    // Verify the URL is accessible
+    try {
+      const response = await fetch(publicUrl, { method: 'HEAD' });
+      console.log('Public URL accessibility check:', {
+        status: response.status,
+        headers: Object.fromEntries(response.headers.entries()),
+        url: publicUrl,
+        contentType: response.headers.get('content-type'),
+        contentLength: response.headers.get('content-length')
+      });
+    } catch (urlError) {
+      console.warn('Error checking public URL accessibility:', urlError);
+    }
 
     // Save recording metadata to database
     const { data, error } = await supabase

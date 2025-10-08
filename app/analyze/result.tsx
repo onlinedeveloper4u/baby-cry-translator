@@ -12,47 +12,61 @@ export default function AnalyzeResultScreen() {
   const [notes, setNotes] = React.useState('');
   const { user } = useAuthStore();
   const { activeBabyId } = useBabiesStore();
-  const { isPlaying, audioError, audioLoaded, togglePlay } = useCustomAudioPlayer(uri && uri !== 'undefined' ? String(uri) : null);
+
+  // Ensure URI is properly formatted for audio player
+  const audioUri = React.useMemo(() => {
+    if (uri && uri !== 'undefined' && typeof uri === 'string') {
+      return uri.startsWith('file://') ? uri : `file://${uri}`;
+    }
+    return null;
+  }, [uri]);
+
+  const { isPlaying, audioError, audioLoaded, togglePlay } = useCustomAudioPlayer(audioUri);
   const [showBabyRequired, setShowBabyRequired] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
 
   React.useEffect(() => {
     // Check if audio file exists and is valid
     const checkAudioFile = async () => {
-      if (uri && uri !== 'undefined') {
+      if (audioUri) {
         try {
           const FileSystem = require('expo-file-system');
-          const fileInfo = await FileSystem.getInfoAsync(String(uri));
-          if (fileInfo.exists && fileInfo.size && fileInfo.size > 0) {
-            // Audio file check is now handled by the hook
-          } else {
-            console.warn('Audio file does not exist or is empty:', fileInfo);
+          const fileInfo = await FileSystem.getInfoAsync(audioUri);
+          console.log('Result screen - Audio file check:', {
+            audioUri,
+            exists: fileInfo.exists,
+            size: fileInfo.size,
+            isDirectory: fileInfo.isDirectory
+          });
+
+          if (!fileInfo.exists || fileInfo.size < 1024) {
+            console.warn('Audio file does not exist or is too small');
           }
         } catch (error) {
-          console.warn('Error checking audio file:', error);
+          console.warn('Error checking audio file in result screen:', error);
         }
       }
     };
 
     checkAudioFile();
-  }, [uri]);
+  }, [audioUri]);
 
 
 
   async function handleSave() {
-    if (!user?.id || !activeBabyId || !uri || uri === 'undefined') {
+    if (!user?.id || !activeBabyId || !audioUri) {
       if (!activeBabyId) {
         setShowBabyRequired(true);
         return;
       }
-      console.warn('Missing required data for saving:', { userId: user?.id, activeBabyId, uri });
+      console.warn('Missing required data for saving:', { userId: user?.id, activeBabyId, audioUri });
       return;
     }
 
     try {
       setSaving(true);
-      console.log('Saving recording:', { userId: user.id, babyId: activeBabyId, fileUri: uri, notes });
-      await uploadAudioAndCreateRecording({ userId: user.id, babyId: activeBabyId, fileUri: String(uri), notes });
+      console.log('Saving recording:', { userId: user.id, babyId: activeBabyId, fileUri: audioUri, notes });
+      await uploadAudioAndCreateRecording({ userId: user.id, babyId: activeBabyId, fileUri: audioUri, notes });
       console.log('Recording saved successfully');
       router.replace('/(tabs)/logs');
     } catch (error) {
@@ -132,7 +146,7 @@ export default function AnalyzeResultScreen() {
           <TouchableOpacity
             className="bg-red-600 px-6 py-4 rounded-2xl"
             onPress={handleSave}
-            disabled={saving || !uri || uri === 'undefined' || audioError || showBabyRequired}
+            disabled={saving || !audioUri || audioError || showBabyRequired}
           >
             <Text className="text-white text-lg font-bold">{saving ? 'Saving…' : 'Save'}</Text>
           </TouchableOpacity>
@@ -148,7 +162,7 @@ export default function AnalyzeResultScreen() {
               Unable to load the audio file. The recording may be corrupted or the file format is not supported.
             </Text>
             <Text className="text-red-600 text-sm font-mono">
-              URI: {uri ? String(uri).substring(0, 50) + '...' : 'No URI'}
+              URI: {audioUri ? audioUri.substring(0, 50) + '...' : 'No URI'}
             </Text>
           </View>
         )}

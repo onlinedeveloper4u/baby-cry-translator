@@ -101,6 +101,15 @@ export default function LogsScreen() {
         return;
       }
 
+      // Ensure URL has proper format for audio player
+      const audioUrl = recording.url.startsWith('http') ? recording.url : `file://${recording.url}`;
+
+      console.log('Attempting to play recording:', {
+        id: recording.id,
+        originalUrl: recording.url,
+        formattedUrl: audioUrl
+      });
+
       // Clear any previous errors for this recording
       setAudioErrors(prev => {
         const newErrors = new Set(prev);
@@ -110,11 +119,11 @@ export default function LogsScreen() {
 
       // Set the new recording as the current playing one
       setPlayingId(recording.id);
-      setCurrentPlayingUrl(recording.url);
+      setCurrentPlayingUrl(audioUrl);
 
       // Small delay to allow the player to initialize with the new URL
       setTimeout(async () => {
-        if (currentPlayingUrl === recording.url) {
+        if (currentPlayingUrl === audioUrl) {
           await togglePlay();
         }
       }, 100);

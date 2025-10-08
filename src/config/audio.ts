@@ -5,21 +5,23 @@ export const AUDIO_CONFIG = {
   // Audio mode for playback
   PLAYBACK_MODE: {
     allowsRecording: false,
-    playsInSilentMode: true,
+    playsInSilentMode: false, // Changed to false to allow audio playback even in silent mode
     shouldPlayInBackground: false,
     shouldRouteThroughEarpiece: false,
-    interruptionMode: 'mixWithOthers',
-    interruptionModeAndroid: 'duckOthers',
+    interruptionMode: 'mixWithOthers' as const,
+    interruptionModeAndroid: 'duckOthers' as const,
   } as AudioMode,
 
   // Audio mode for recording - optimized for microphone input
   RECORDING_MODE: {
     allowsRecording: true,
-    playsInSilentMode: false, // Changed to false to ensure mic input is active
+    playsInSilentMode: true, // Allow recording in silent mode
     shouldPlayInBackground: false,
     shouldRouteThroughEarpiece: false,
-    interruptionMode: 'mixWithOthers',
-    interruptionModeAndroid: 'duckOthers',
+    interruptionMode: 'mixWithOthers' as const,
+    interruptionModeAndroid: 'duckOthers' as const,
+    playThroughEarpieceAndroid: false,
+    staysActiveInBackground: false,
   } as AudioMode,
   
   // Additional recording configuration for better audio capture

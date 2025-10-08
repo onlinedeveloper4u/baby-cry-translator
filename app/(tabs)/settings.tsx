@@ -1,109 +1,62 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React from 'react';
-import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { useAuthStore } from '../../src/store/auth';
+import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { RecordingDiagnostics } from '../../src/utils/recordingDiagnostics';
 
 export default function SettingsScreen() {
-  const { signOut } = useAuthStore();
-
-  const handleSignOut = async () => {
-    await signOut();
-    router.replace('/auth');
+  const runQuickDiagnostic = async () => {
+    try {
+      const success = await RecordingDiagnostics.getInstance().quickTest();
+      Alert.alert(
+        'Quick Diagnostic',
+        success ? '✅ Audio recording appears to be working!' : '❌ Audio recording issues detected',
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      Alert.alert(
+        'Diagnostic Failed',
+        'Failed to run quick diagnostic. Check console for details.',
+        [{ text: 'OK' }]
+      );
+    }
   };
 
-  const handleBack = () => {
-    router.back();
+  const runFullDiagnostic = () => {
+    router.push('/diagnostics/audio');
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-rose-50">
-      <ScrollView className="flex-1 px-6 pt-10" showsVerticalScrollIndicator={false}>
-        <Text className="text-3xl font-extrabold text-neutral-900 mb-6">Settings</Text>
-        {/* Baby Profiles Section */}
-        <View className="mb-8">
-          <Text className="text-lg font-bold text-neutral-900 mb-4">Baby Profiles</Text>
-          <TouchableOpacity className="flex-row items-center py-4" onPress={() => router.push('/babies')}>
-            <View className="w-12 h-12 bg-blue-100 rounded-2xl items-center justify-center mr-4">
-              <Ionicons name="happy-outline" size={24} color="#3B82F6" />
-            </View>
-            <View className="flex-1">
-              <Text className="text-lg font-medium text-neutral-900">Manage Baby Profiles</Text>
-              <Text className="text-sm text-amber-800 mt-1">Baby's name, age, and other details</Text>
-            </View>
+    <ScrollView className="flex-1 bg-gray-50">
+      <View className="p-6">
+        <Text className="text-2xl font-bold text-gray-900 mb-6">Settings</Text>
+
+        {/* Audio Diagnostics Section */}
+        <View className="bg-white rounded-xl p-4 mb-4">
+          <Text className="text-lg font-semibold text-gray-900 mb-4">🔊 Audio Diagnostics</Text>
+
+          <TouchableOpacity
+            onPress={runQuickDiagnostic}
+            className="bg-blue-600 p-3 rounded-lg mb-3"
+          >
+            <Text className="text-white font-semibold text-center">🚀 Quick Audio Test</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={runFullDiagnostic}
+            className="bg-green-600 p-3 rounded-lg"
+          >
+            <Text className="text-white font-semibold text-center">📊 Full Audio Diagnostic</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Account Section */}
-        <View className="mb-8">
-          <Text className="text-lg font-bold text-neutral-900 mb-4">Account</Text>
-          <View className="">
-            <TouchableOpacity className="flex-row items-center py-4">
-              <View className="w-12 h-12 bg-gray-100 rounded-2xl items-center justify-center mr-4">
-                <Ionicons name="person-outline" size={24} color="#6B7280" />
-              </View>
-              <Text className="text-lg font-medium text-neutral-900 flex-1">Account Details</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity className="flex-row items-center py-4">
-              <View className="w-12 h-12 bg-gray-100 rounded-2xl items-center justify-center mr-4">
-                <Ionicons name="star-outline" size={24} color="#6B7280" />
-              </View>
-              <Text className="text-lg font-medium text-neutral-900 flex-1">Subscription Status</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity className="flex-row items-center py-4">
-              <View className="w-12 h-12 bg-gray-100 rounded-2xl items-center justify-center mr-4">
-                <Ionicons name="card-outline" size={24} color="#6B7280" />
-              </View>
-              <Text className="text-lg font-medium text-neutral-900 flex-1">Manage Subscription</Text>
-            </TouchableOpacity>
-          </View>
+        {/* Other settings sections */}
+        <View className="bg-white rounded-xl p-4">
+          <Text className="text-lg font-semibold text-gray-900 mb-4">General Settings</Text>
+          <Text className="text-gray-600">More settings coming soon...</Text>
         </View>
-
-        {/* Data Controls Section */}
-        <View className="mb-8">
-          <Text className="text-lg font-bold text-neutral-900 mb-4">Data Controls</Text>
-          <View>
-            <TouchableOpacity className="flex-row items-center py-4">
-              <View className="w-12 h-12 bg-gray-100 rounded-2xl items-center justify-center mr-4">
-                <Ionicons name="download-outline" size={24} color="#6B7280" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-lg font-medium text-neutral-900">
-                  Export Data <Text className="text-amber-800">(Premium)</Text>
-                </Text>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              className="flex-row items-center py-4"
-              onPress={handleSignOut}
-            >
-              <View className="w-12 h-12 bg-gray-100 rounded-2xl items-center justify-center mr-4">
-                <Ionicons name="log-out-outline" size={24} color="#6B7280" />
-              </View>
-              <Text className="text-lg font-medium text-neutral-900 flex-1">Sign Out</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Footer Links */}
-        <View className="flex-row justify-center space-x-6 mb-8">
-          <TouchableOpacity>
-            <Text className="text-amber-800 text-base">Privacy</Text>
-          </TouchableOpacity>
-          <Text className="text-amber-800 text-base">/</Text>
-          <TouchableOpacity>
-            <Text className="text-amber-800 text-base">Terms</Text>
-          </TouchableOpacity>
-          <Text className="text-amber-800 text-base">/</Text>
-          <TouchableOpacity>
-            <Text className="text-amber-800 text-base">About</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+    </ScrollView>
   );
 }
 
