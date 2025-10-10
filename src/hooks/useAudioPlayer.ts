@@ -9,7 +9,7 @@ interface UseAudioPlayerOptions {
 }
 
 export function useCustomAudioPlayer(uri: string | null, pollingInterval = PLAYER_CONFIG.STATUS_POLLING_INTERVAL) {
-  const player = useAudioPlayer(uri, pollingInterval);
+  const player = useAudioPlayer(uri);
   const status = useAudioPlayerStatus(player);
   const [audioError, setAudioError] = useState(false);
   const [audioLoaded, setAudioLoaded] = useState(false);
